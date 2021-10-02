@@ -58,22 +58,22 @@ def getData():
         if name in limits:
             validItems = validItems + 1
             limit = limits[name]
-            item['buy_limit'] = limit
+            item['buyLimit'] = limit
         else:
             invalidItems = invalidItems + 1
-            item['buy_limit'] = 0
+            item['buyLimit'] = 0
     print('Call time: ' + str(datetime.now()))
     print('Valid items: ' + str(validItems))
     print('Invalid items: ' + str(invalidItems))
 
     print('Writing to file... ')
-    with open('/project1/rs/data3.txt', 'a') as writeFile:
+    with open('data3.txt', 'a') as writeFile:
         writeFile.write(json.dumps(geData))
         writeFile.write('\n')
     print('Done.')
 
 s = sched.scheduler(time.time, time.sleep)
-numNoints = 10000 # total number of calls
+numPoints = 10000 # total number of calls
 inc = 15*60 # time between calls in minutes
 now = time.time()
 for x in range(numPoints):
