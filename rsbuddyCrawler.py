@@ -6,7 +6,6 @@ import json
 import sched
 import time
 from datetime import datetime
-import helper_functions
 
 
 # set and request url; extract source code for exchange limits
@@ -20,63 +19,63 @@ soup = BeautifulSoup(html.text, 'xml')
 # extract exchange limits for all items
 print('Extracting exchange limits for all items...')
 table = soup.find('table', attrs={'class':'wikitable align-right-2 sortable'})
-table_body = table.find('tbody')
+tableBody = table.find('tbody')
 
-limit_data = np.empty((2,))
-rows = table_body.find_all('tr')
+limitData = np.empty((2,))
+rows = tableBody.find_all('tr')
 for row in rows:
     cols = row.find_all('td')
     cols = [item.text.strip() for item in cols]
     if cols:
-        limit_data = np.column_stack((limit_data, np.array([item for item in cols if item])))
-limit_data = np.delete(limit_data, 0, axis=1)
+        limitData = np.column_stack((limitData, np.array([item for item in cols if item])))
+limitData = np.delete(limitData, 0, axis=1)
 print('Done.')
 
 # delete extra string tags
-extra_strings = [' (tablet)', ' (flatpack)', ' (beige)', ' (blue)', ' (brown)', ' (red)', ' (white)', ' (pointed)', ' (round)',
+extraStrings = [' (tablet)', ' (flatpack)', ' (beige)', ' (blue)', ' (brown)', ' (red)', ' (white)', ' (pointed)', ' (round)',
                 ' (bottom)', ' (top)', ' (bagged)', ' (item)']
 pos = 0
-for item_name in limit_data[0]:
-    for extra_string in extra_strings:
-        if extra_string in item_name:
-            limit_data[0][pos] = limit_data[0][pos].replace(extra_string, '')
+for itemName in limitData[0]:
+    for extraString in extraStrings:
+        if extraString in itemName:
+            limitData[0][pos] = limitData[0][pos].replace(extraString, '')
     pos = pos + 1
 
-limits = dict((limit_data[0][i], limit_data[1][i]) for i in range(len(limit_data[0])))
+limits = dict((limitData[0][i], limitData[1][i]) for i in range(len(limitData[0])))
 
 
-def get_data():
+def getData():
     # set and request url; extract GE data (15 mins)
     with urllib.request.urlopen("http://rsbuddy.com/exchange/summary.json") as url:
-        ge_data = json.loads(url.read().decode())
+        geData = json.loads(url.read().decode())
 
     # add buy_limit to GE info
-    valid_items = 0
-    invalid_items = 0
-    for key in ge_data:
-        item = ge_data[key]
+    validItems = 0
+    invalidItems = 0
+    for key in geData:
+        item = geData[key]
         name = item['name']
         if name in limits:
-            valid_items = valid_items + 1
+            validItems = validItems + 1
             limit = limits[name]
             item['buy_limit'] = limit
         else:
-            invalid_items = invalid_items + 1
+            invalidItems = invalidItems + 1
             item['buy_limit'] = 0
     print('Call time: ' + str(datetime.now()))
-    print('Valid items: ' + str(valid_items))
-    print('Invalid items: ' + str(invalid_items))
+    print('Valid items: ' + str(validItems))
+    print('Invalid items: ' + str(invalidItems))
 
     print('Writing to file... ')
-    with open('/project1/rs/data3.txt', 'a') as write_file:
-        write_file.write(json.dumps(ge_data))
-        write_file.write('\n')
+    with open('/project1/rs/data3.txt', 'a') as writeFile:
+        writeFile.write(json.dumps(geData))
+        writeFile.write('\n')
     print('Done.')
 
 s = sched.scheduler(time.time, time.sleep)
-num_points = 5000 # total number of calls
+numNoints = 10000 # total number of calls
 inc = 15*60 # time between calls in minutes
 now = time.time()
-for x in range(num_points):
-    s.enterabs(now + (inc * x), 1, get_data)
+for x in range(numPoints):
+    s.enterabs(now + (inc * x), 1, getData)
 s.run()
