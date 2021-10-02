@@ -68,7 +68,7 @@ def get_data():
     print('Invalid items: ' + str(invalid_items))
 
     print('Writing to file... ')
-    with open('/home/pi/Desktop/py_scripts/data3.txt', 'a') as write_file:
+    with open('/project1/rs/data3.txt', 'a') as write_file:
         write_file.write(json.dumps(ge_data))
         write_file.write('\n')
     print('Done.')
